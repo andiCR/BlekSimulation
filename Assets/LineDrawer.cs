@@ -16,6 +16,7 @@ public class LineDrawer : MonoBehaviour {
 
 	Vector3[] _recordedPositions = new Vector3[60 * 5];
 	Vector3 _startPosition = new Vector3();
+	Vector3 _oldPos;
 	int _recordIndex = 0;
 	int _replayIndex = 0;
 
@@ -60,29 +61,31 @@ public class LineDrawer : MonoBehaviour {
 
 		_startPosition = Camera.main.ScreenToWorldPoint(position);
 		_startPosition.z = 1;
+		_oldPos = _recordedPositions[0];
 	}
 
 	void DrawReplay() {
-		// var i = 0;//_replayIndex % _lineRenderer.numPositions;
-		// for (; i < _replayIndex; i++) {
-		// 	var idx = i % _lineRenderer.numPositions; // Indice del line renderer que ocupo
-		// 	_lineRenderer.SetPosition(idx, _recordedPositions[i] - _recordedPositions[0] + _startPosition);
-		// }
-		for (var i = 0; i < _lineRenderer.numPositions; i++) {
-			var idx = _replayIndex - i;
-			Vector3 pos;
-			if (idx < 0) {
-				idx = _recordIndex + idx;
-				pos = _recordedPositions[idx];
-			} else {
-				pos = _recordedPositions[i] -_recordedPositions[0] + _startPosition;
-			}
-			_lineRenderer.SetPosition(i, pos);
+		// Save first position
+		var p = _recordedPositions[0];
+		
+		// Shift every point to the left
+		for (var i = 0; i < _recordIndex; i++) {
+			_recordedPositions[i] = _recordedPositions[i + 1];
 		}
 
+		// Save new last position (which would be the first position positioned at the end)
+		_recordedPositions[_recordIndex - 1] = p - _oldPos + _startPosition;
+
+		// Draw the line
+		for (var i = 0; i < _lineRenderer.numPositions; i++) {
+			_lineRenderer.SetPosition(i, _recordedPositions[i]);
+		}
+
+		// Advance replay
 		_replayIndex++;
 		if (_replayIndex == _recordIndex) {
-			_startPosition = _recordedPositions[_replayIndex - 1] - _recordedPositions[0] + _startPosition;
+			_startPosition = _recordedPositions[_replayIndex - 1];
+			_oldPos = _recordedPositions[0];
 			_replayIndex = 0;
 		}
 	}
