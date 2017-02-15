@@ -14,7 +14,7 @@ public class LineDrawer : MonoBehaviour {
 	State _state = State.None;
 	LineRenderer _lineRenderer;
 
-	Vector3[] _recordedPositions = new Vector3[60 * 5];
+	List<Vector3> _recordedPositions = new List<Vector3>();
 	Vector3 _startPosition = new Vector3();
 	Vector3 _oldPos;
 	int _recordIndex = 0;
@@ -25,9 +25,7 @@ public class LineDrawer : MonoBehaviour {
 		_lineRenderer = GetComponent<LineRenderer>();
 		_lineRenderer.enabled = false;
 
-		for (var i = 0; i < _recordedPositions.Length; i++) {
-			_recordedPositions[i] = new Vector3();
-		}
+
 	}
 
 	void StartDrawing(Vector2 position) {
@@ -40,11 +38,13 @@ public class LineDrawer : MonoBehaviour {
 	}
 
 	void UpdateDrawing(Vector2 position) {
-		if (_recordIndex >= _recordedPositions.Length) {
+		if (_recordIndex > _recordedPositions.Count) {
 			return;
 		}
-		_recordedPositions[_recordIndex] = Camera.main.ScreenToWorldPoint(position);
-		_recordedPositions[_recordIndex].z = 1;
+
+		_recordedPositions.Add( new Vector3(Camera.main.ScreenToWorldPoint(position).x, 
+											Camera.main.ScreenToWorldPoint(position).y, 
+											1));
 
 		for (var i = 0; i < _lineRenderer.numPositions; i++) {
 			var idx = _recordIndex - i;
@@ -66,10 +66,12 @@ public class LineDrawer : MonoBehaviour {
 
 	void DrawReplay() {
 		// Save first position
+//		Debug.Log (_recordedPositions[0]);
 		var p = _recordedPositions[0];
-		
+//		Debug.Log (p);
 		// Shift every point to the left
-		for (var i = 0; i < _recordIndex; i++) {
+		for (var i = 0; i < _recordedPositions.Count - 1; i++) {
+//			Debug.Log (_recordedPositions[i]);
 			_recordedPositions[i] = _recordedPositions[i + 1];
 		}
 
