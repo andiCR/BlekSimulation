@@ -79,7 +79,7 @@ public class LineDrawer : MonoBehaviour {
 		_recordedPositions[_recordIndex - 1] = p - _oldPos + _startPosition;
 
 		// Draw the line
-		for (var i = 0; i < _lineRenderer.numPositions; i++) {
+		for (var i = 0; i < _recordedPositions.Count; i++) {
 			_lineRenderer.SetPosition(i, _recordedPositions[i]);
 		}
 
