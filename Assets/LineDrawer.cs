@@ -17,6 +17,7 @@ public class LineDrawer : MonoBehaviour {
 	List<Vector3> _recordedPositions = new List<Vector3>();
 	Vector3 _startPosition = new Vector3();
 	Vector3 _oldPos;
+	public GameObject collider;
 	int _recordIndex = 0;
 	int _replayIndex = 0;
 
@@ -24,8 +25,6 @@ public class LineDrawer : MonoBehaviour {
 	void Start () {
 		_lineRenderer = GetComponent<LineRenderer>();
 		_lineRenderer.enabled = false;
-
-
 	}
 
 	void StartDrawing(Vector2 position) {
@@ -62,6 +61,8 @@ public class LineDrawer : MonoBehaviour {
 		_startPosition = Camera.main.ScreenToWorldPoint(position);
 		_startPosition.z = 1;
 		_oldPos = _recordedPositions[0];
+
+		collider.transform.position = _recordedPositions [_recordedPositions.Count - 1];
 	}
 
 	void DrawReplay() {
@@ -90,6 +91,8 @@ public class LineDrawer : MonoBehaviour {
 			_oldPos = _recordedPositions[0];
 			_replayIndex = 0;
 		}
+
+		collider.transform.position = _recordedPositions [_recordedPositions.Count - 1];
 	}
 
 	// Update is called once per frame
