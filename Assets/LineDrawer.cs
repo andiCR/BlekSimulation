@@ -8,13 +8,12 @@ public class LineDrawer : MonoBehaviour {
 		None,
 		Drawing,
 		Replaying
-
 	}
 
 	State _state = State.None;
 	LineRenderer _lineRenderer;
 
-	List<Vector3> _recordedPositions = new List<Vector3>();
+	Vector3[] _recordedPositions = new Vector3[60 * 5];
 	Vector3 _startPosition = new Vector3();
 	Vector3 _oldPos;
 	public GameObject collider;
@@ -25,6 +24,10 @@ public class LineDrawer : MonoBehaviour {
 	void Start () {
 		_lineRenderer = GetComponent<LineRenderer>();
 		_lineRenderer.enabled = false;
+
+		for (var i = 0; i < _recordedPositions.Length; i++) {
+			_recordedPositions[i] = new Vector3();
+		}
 	}
 
 	void StartDrawing(Vector2 position) {
@@ -37,18 +40,18 @@ public class LineDrawer : MonoBehaviour {
 	}
 
 	void UpdateDrawing(Vector2 position) {
-		if (_recordIndex > _recordedPositions.Count) {
+		if (_recordIndex >= _recordedPositions.Length) {
 			return;
 		}
 
-		_recordedPositions.Add( new Vector3(Camera.main.ScreenToWorldPoint(position).x, 
-											Camera.main.ScreenToWorldPoint(position).y, 
-											1));
+		_recordedPositions[_recordIndex] = Camera.main.ScreenToWorldPoint(position);
+		_recordedPositions[_recordIndex].z = 1;
 
 		for (var i = 0; i < _lineRenderer.numPositions; i++) {
 			var idx = _recordIndex - i;
 			if (idx < 0) {
-				break;
+				// break;
+				idx = 0;
 			}
 			_lineRenderer.SetPosition(i, _recordedPositions[idx]);
 		}
@@ -58,21 +61,18 @@ public class LineDrawer : MonoBehaviour {
 	void StopDrawing(Vector2 position) {
 		_state = State.Replaying;
 
-		_startPosition = Camera.main.ScreenToWorldPoint(position);
-		_startPosition.z = 1;
+		_startPosition = _recordedPositions[_recordIndex - 1];
 		_oldPos = _recordedPositions[0];
 
-		collider.transform.position = _recordedPositions [_recordedPositions.Count - 1];
+		collider.transform.position = _recordedPositions [_recordIndex - 1];
 	}
 
 	void DrawReplay() {
 		// Save first position
-//		Debug.Log (_recordedPositions[0]);
 		var p = _recordedPositions[0];
-//		Debug.Log (p);
+
 		// Shift every point to the left
-		for (var i = 0; i < _recordedPositions.Count - 1; i++) {
-//			Debug.Log (_recordedPositions[i]);
+		for (var i = 0; i < _recordIndex - 1; i++) {
 			_recordedPositions[i] = _recordedPositions[i + 1];
 		}
 
@@ -80,7 +80,7 @@ public class LineDrawer : MonoBehaviour {
 		_recordedPositions[_recordIndex - 1] = p - _oldPos + _startPosition;
 
 		// Draw the line
-		for (var i = 0; i < _recordedPositions.Count; i++) {
+		for (var i = 0; i < _lineRenderer.numPositions; i++) {
 			_lineRenderer.SetPosition(i, _recordedPositions[i]);
 		}
 
@@ -92,7 +92,7 @@ public class LineDrawer : MonoBehaviour {
 			_replayIndex = 0;
 		}
 
-		collider.transform.position = _recordedPositions [_recordedPositions.Count - 1];
+		collider.transform.position = _recordedPositions [_recordIndex - 1];
 	}
 
 	// Update is called once per frame
