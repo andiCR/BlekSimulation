@@ -4,12 +4,18 @@ using UnityEngine;
 
 public class LineDrawer : MonoBehaviour {
 
+	//---------------------------
+	// Types
+	//---------------------------
 	enum State {
 		None,
 		Drawing,
 		Replaying
 	}
 
+	//---------------------------
+	// Private variables
+	//---------------------------
 	State _state = State.None;
 	LineRenderer _lineRenderer;
 
@@ -20,16 +26,21 @@ public class LineDrawer : MonoBehaviour {
 	int _recordIndex = 0;
 	int _replayIndex = 0;
 
-	// Use this for initialization
+	//---------------------------
+	// Initialization
+	//---------------------------
 	void Start () {
 		_lineRenderer = GetComponent<LineRenderer>();
 		_lineRenderer.enabled = false;
 
 		for (var i = 0; i < _recordedPositions.Length; i++) {
-			_recordedPositions[i] = new Vector3();
+			_recordedPositions[i] = Vector3.zero;
 		}
 	}
 
+	//---------------------------
+	// Drawing
+	//---------------------------
 	void StartDrawing(Vector2 position) {
 		_state = State.Drawing;
 		_lineRenderer.enabled = true;
@@ -38,15 +49,24 @@ public class LineDrawer : MonoBehaviour {
 		_startPosition.x = position.x;
 		_startPosition.y = position.y;
 	}
-
+	
 	void UpdateDrawing(Vector2 position) {
+		// Prevent drawing if we are out of space
 		if (_recordIndex >= _recordedPositions.Length) {
 			return;
 		}
 
+		// Calculate next recorded position
 		_recordedPositions[_recordIndex] = Camera.main.ScreenToWorldPoint(position);
 		_recordedPositions[_recordIndex].z = 1;
 
+		// Prevent very close distances to screw up the rendering
+		if (_recordIndex > 0 && Vector3.Distance(_recordedPositions[_recordIndex], _recordedPositions[_recordIndex - 1]) < 0.1f) {
+			_recordedPositions[_recordIndex] = Vector3.zero;
+			return;
+		}
+
+		// Set positions
 		for (var i = 0; i < _lineRenderer.numPositions; i++) {
 			var idx = _recordIndex - i;
 			if (idx < 0) {
@@ -65,6 +85,18 @@ public class LineDrawer : MonoBehaviour {
 		_oldPos = _recordedPositions[0];
 
 		collider.transform.position = _recordedPositions [_recordIndex - 1];
+	}
+
+	void ClearDrawing() {
+		for (var i = 0; i < _lineRenderer.numPositions; i++) {
+			_lineRenderer.SetPosition(i, Vector3.zero);
+		}
+
+		for (var i = 0; i < _recordedPositions.Length; i++) {
+			_recordedPositions[i] = Vector3.zero;
+		}
+		_recordIndex = 0;
+		_replayIndex = 0;
 	}
 
 	void DrawReplay() {
@@ -95,7 +127,9 @@ public class LineDrawer : MonoBehaviour {
 		collider.transform.position = _recordedPositions [_recordIndex - 1];
 	}
 
-	// Update is called once per frame
+	//---------------------------
+	// Update
+	//---------------------------
 	void FixedUpdate () {
 		switch (_state) {
 			case State.None:
@@ -109,10 +143,15 @@ public class LineDrawer : MonoBehaviour {
 				} else {
 					UpdateDrawing(Input.mousePosition);
 				}
-			break;
+				break;
 			case State.Replaying:
 				DrawReplay();
-			break;
+
+				if (Input.GetMouseButtonDown(0)) {
+					ClearDrawing();
+					StartDrawing(Input.mousePosition);
+				}
+				break;
 		}
 	}
 }
