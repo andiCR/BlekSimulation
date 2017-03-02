@@ -78,13 +78,14 @@ public class LineDrawer : MonoBehaviour {
 
 		_recordIndex++;
 	}
+	
 	void StopDrawing(Vector2 position) {
 		_state = State.Replaying;
 
 		_startPosition = _recordedPositions[_recordIndex - 1];
 		_oldPos = _recordedPositions[0];
 
-		collider.transform.position = _recordedPositions [_recordIndex - 1];
+		collider.transform.position = _recordedPositions[_recordIndex - 1];
 	}
 
 	void ClearDrawing() {
@@ -113,7 +114,11 @@ public class LineDrawer : MonoBehaviour {
 
 		// Draw the line
 		for (var i = 0; i < _lineRenderer.numPositions; i++) {
-			_lineRenderer.SetPosition(i, _recordedPositions[i]);
+			var idx = _recordIndex - i - 1;
+			if (idx < 0) {
+				idx = 0;
+			}
+			_lineRenderer.SetPosition(i, _recordedPositions[idx]);
 		}
 
 		// Advance replay
