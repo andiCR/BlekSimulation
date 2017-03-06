@@ -48,7 +48,14 @@ public class Game : MonoBehaviour {
 	}
 
 	public void HandleHitObstacle(Obstacle obstacle) {
+		// Remove line
+		lineDrawer.StopDrawing();
 		lineDrawer.ClearDrawing();
+
+		// Restart
+		collectedObjects.Clear();
+
+		// Revive collected objects	
 		foreach (var c in collectedObjects) {
 			c.Revive();
 		}
@@ -58,7 +65,7 @@ public class Game : MonoBehaviour {
 		currentLevelIndex++;
 		
 		// Disable line drawer
-		lineDrawer.enabled = false;
+		lineDrawer.Disable();
 
 		// Hide old level
 		if (currentLevel != null) {
@@ -82,7 +89,7 @@ public class Game : MonoBehaviour {
 		// Load next level
 		if (currentLevelIndex != levels.Length) {
 			lineDrawer.gameObject.SetActive(true);
-			lineDrawer.enabled = true;
+			lineDrawer.Enable();
 			LoadLevel(currentLevelIndex);
 		}
 	}

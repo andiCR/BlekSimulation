@@ -10,7 +10,8 @@ public class LineDrawer : MonoBehaviour {
 	enum State {
 		None,
 		Drawing,
-		Replaying
+		Replaying,
+		Disabled
 	}
 	
 	//---------------------------
@@ -78,7 +79,7 @@ public class LineDrawer : MonoBehaviour {
 		_recordIndex++;
 	}
 	
-	void StopDrawing() {
+	public void StopDrawing() {
 		_state = State.Replaying;
 
 		_startPosition = _recordedPositions[_recordIndex - 1];
@@ -101,6 +102,13 @@ public class LineDrawer : MonoBehaviour {
 	}
 
 	void DrawReplay() {
+		if (_recordIndex <= 0) {
+			for (var i = 0; i < _lineRenderer.numPositions; i++) {
+				_lineRenderer.SetPosition(i, Vector3.zero);
+			}
+			return;
+		}
+		
 		// Save first position
 		var p = _recordedPositions[0];
 
@@ -111,7 +119,7 @@ public class LineDrawer : MonoBehaviour {
 
 		// Save new last position (which would be the first position positioned at the end)
 		_recordedPositions[_recordIndex - 1] = p - _oldPos + _startPosition;
-
+	
 		// Draw the line
 		for (var i = 0; i < _lineRenderer.numPositions; i++) {
 			var idx = _recordIndex - i - 1;
@@ -131,7 +139,17 @@ public class LineDrawer : MonoBehaviour {
 
 		transform.position = _recordedPositions[_recordIndex - 1];
 	}
+	//---------------------------
+	// Enabling
+	//---------------------------
+	public void Enable() {
+		_state = State.None;
+	}
+	
+	public void Disable() {
+		_state = State.Disabled;
 
+	}
 	//---------------------------
 	// Update
 	//---------------------------
@@ -156,6 +174,9 @@ public class LineDrawer : MonoBehaviour {
 					ClearDrawing();
 					StartDrawing(Input.mousePosition);
 				}
+				break;
+			case State.Disabled:
+				DrawReplay();
 				break;
 		}
 	}
