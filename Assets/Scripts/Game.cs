@@ -72,6 +72,10 @@ public class Game : MonoBehaviour {
 			yield return new WaitForSeconds(1.5f);
 			currentLevel.gameObject.SetActive(false);
 			lineDrawer.gameObject.SetActive(false);
+
+			// Remove line
+			lineDrawer.StopDrawing();
+			lineDrawer.ClearDrawing();
 		}
 
 		// Show ui
