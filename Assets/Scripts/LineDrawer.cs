@@ -12,7 +12,7 @@ public class LineDrawer : MonoBehaviour {
 		Drawing,
 		Replaying
 	}
-
+	
 	//---------------------------
 	// Private variables
 	//---------------------------
@@ -22,7 +22,6 @@ public class LineDrawer : MonoBehaviour {
 	Vector3[] _recordedPositions = new Vector3[60 * 5];
 	Vector3 _startPosition = new Vector3();
 	Vector3 _oldPos;
-	public GameObject collider;
 	int _recordIndex = 0;
 	int _replayIndex = 0;
 
@@ -79,16 +78,17 @@ public class LineDrawer : MonoBehaviour {
 		_recordIndex++;
 	}
 	
-	void StopDrawing(Vector2 position) {
+	void StopDrawing() {
 		_state = State.Replaying;
 
 		_startPosition = _recordedPositions[_recordIndex - 1];
 		_oldPos = _recordedPositions[0];
 
-		collider.transform.position = _recordedPositions[_recordIndex - 1];
+		transform.position = _recordedPositions[_recordIndex - 1];
 	}
 
-	void ClearDrawing() {
+	public void ClearDrawing() {
+		_state = State.None;
 		for (var i = 0; i < _lineRenderer.numPositions; i++) {
 			_lineRenderer.SetPosition(i, Vector3.zero);
 		}
@@ -129,7 +129,7 @@ public class LineDrawer : MonoBehaviour {
 			_replayIndex = 0;
 		}
 
-		collider.transform.position = _recordedPositions [_recordIndex - 1];
+		transform.position = _recordedPositions[_recordIndex - 1];
 	}
 
 	//---------------------------
@@ -144,7 +144,7 @@ public class LineDrawer : MonoBehaviour {
 				break;
 			case State.Drawing:
 				if (Input.GetMouseButtonUp(0)) {
-					StopDrawing(Input.mousePosition);
+					StopDrawing();
 				} else {
 					UpdateDrawing(Input.mousePosition);
 				}
