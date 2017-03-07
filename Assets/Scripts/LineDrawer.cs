@@ -26,6 +26,8 @@ public class LineDrawer : MonoBehaviour {
 	int _recordIndex = 0;
 	int _replayIndex = 0;
 	Vector3 _multiplier = Vector3.one;
+	int _multiplierIndexX = -1;
+	int _multiplierIndexY = -1;
 
 	//---------------------------
 	// Initialization
@@ -102,14 +104,14 @@ public class LineDrawer : MonoBehaviour {
 		_replayIndex = 0;
 	}
 
-	public void HandleBorderCollision(bool isVertical){
-		Debug.Log ("handle border collision");
+	public void HandleBorderCollision(bool isVertical) {
 		if (isVertical) {
 			_multiplier.y = -_multiplier.y;
+			_multiplierIndexY = _replayIndex;
 		} else {
 			_multiplier.x = -_multiplier.x;
+			_multiplierIndexX = _replayIndex;
 		}
-		//_startPosition 
 	}
 
 	void DrawReplay() {
@@ -129,8 +131,7 @@ public class LineDrawer : MonoBehaviour {
 		}
 
 		// Save new last position (which would be the first position positioned at the end)
-		_recordedPositions[_recordIndex - 1] = (p - _oldPos + _startPosition);
-		_recordedPositions[_recordIndex - 1].Scale(_multiplier);
+		_recordedPositions[_recordIndex - 1] = Vector3.Scale (p - _oldPos, _multiplier) + _startPosition;
 	
 		// Draw the line
 		for (var i = 0; i < _lineRenderer.numPositions; i++) {
@@ -147,6 +148,16 @@ public class LineDrawer : MonoBehaviour {
 			_startPosition = _recordedPositions[_replayIndex - 1];
 			_oldPos = _recordedPositions[0];
 			_replayIndex = 0;
+		}
+
+		// Swap multipliers
+		if (_multiplierIndexX != -1 && _multiplierIndexX == _replayIndex) {
+			_multiplier.x = 1;
+			_multiplierIndexX = -1;
+		}
+		if (_multiplierIndexY != -1 && _multiplierIndexY == _replayIndex) {
+			_multiplier.y = 1;
+			_multiplierIndexY = -1;
 		}
 
 		transform.position = _recordedPositions[_recordIndex - 1];
